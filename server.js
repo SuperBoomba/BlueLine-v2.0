@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -11,6 +10,8 @@ const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const { connectToDB } = require("./db/mongo"); // ✅ שינוי לפי המבנה שלך
+const courseRoutes = require("./routes/courseRoutes");
+const tripRoutes = require("./routes/tripRoutes");
 
 // 🟢 טעינת משתני סביבה
 dotenv.config({ path: "./.env" });
@@ -22,16 +23,31 @@ connectToDB(mongoose)
 
 const app = express();
 const server = http.createServer(app);
+
+// 💡 הגדרת CORS מפושטת: יצירת אובייקט CORS Options
+// הכתובת של ה-Frontend שלך ב-Render היא: https://blueline-yyzo.onrender.com/
+const allowedOrigins = [
+  "http://localhost:3000", // כתובת הפיתוח המקומית
+  "https://blueline-yyzo.onrender.com", // כתובת ה-Frontend המפרוס
+];
+
+const corsOptions = {
+  origin: allowedOrigins, // מאפשר גישה רק מהכתובות המאושרות
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true, // חיוני לשליחת cookies
+};
+
 const io = new Server(server, {
-  cors: {
-    origin: "*", // בפיתוח בלבד
-  },
+  cors: corsOptions, // השתמש בהגדרות המפורשות עבור Socket.io
 });
 
 // 🟢 Middleware
 app.set("trust proxy", 1);
 app.use(express.json());
-app.use(cors());
+
+// 💡 שימוש בהגדרת CORS המפושטת לאפליקציית אקספרס
+app.use(cors(corsOptions));
+
 app.use(helmet());
 app.use(mongoSanitize());
 app.use(xss());
@@ -44,11 +60,13 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(morgan("combined"));
 
-// 🟢 Routes קיימים
+// 🟢 Routes
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/userRoutes");
 const surfRoutes = require("./routes/surf");
 
+app.use("/api/trips", tripRoutes);
+app.use("/api/courses", courseRoutes);
 app.use("/api", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/surf", surfRoutes);
