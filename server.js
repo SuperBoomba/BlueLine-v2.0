@@ -9,7 +9,7 @@ const xss = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
-const { connectToDB } = require("./db/mongo"); // ✅ שינוי לפי המבנה שלך
+const { connectToDB } = require("./db/mongo");
 const courseRoutes = require("./routes/courseRoutes");
 const tripRoutes = require("./routes/tripRoutes");
 
@@ -25,10 +25,9 @@ const app = express();
 const server = http.createServer(app);
 
 // 💡 הגדרת CORS מפושטת: יצירת אובייקט CORS Options
-// הכתובת של ה-Frontend שלך ב-Render היא: https://blueline-yyzo.onrender.com/
 const allowedOrigins = [
   "http://localhost:3000", // כתובת הפיתוח המקומית
-  "https://blueline-yyzo.onrender.com", // כתובת ה-Frontend המפרוס
+  "https://blueline-yyzo.onrender.com", // ✅ הכתובת המפרוסת של ה-Frontend
 ];
 
 const corsOptions = {
@@ -73,7 +72,7 @@ app.use("/api/surf", surfRoutes);
 
 // 🟢 Routes פורום
 const forumRoutes = require("./routes/forumRoutes");
-app.use("/api/forums", forumRoutes); // כל ה-Forum API יהיה כאן
+app.use("/api/forums", forumRoutes);
 
 // 🟢 Route בסיסי
 app.get("/", (req, res) => res.send("🌊 BlueLine API is running..."));
